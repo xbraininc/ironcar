@@ -8,6 +8,8 @@ import datetime
 import picamera
 import picamera.array
 
+from motor_bridge import *
+
 from Adafruit_BNO055 import BNO055
 import Adafruit_PCA9685
 
@@ -49,8 +51,8 @@ with open(commands_json_file) as json_file:
     commands = json.load(json_file)
 
 # PWM setup
-pwm = Adafruit_PCA9685.PCA9685()
-pwm.set_pwm_freq(60)
+# pwm = Adafruit_PCA9685.PCA9685()
+# pwm.set_pwm_freq(60)
 
 state, mode, running = "stop", "training",  True
 n_img = 0
@@ -59,28 +61,31 @@ current_model = None
 max_speed_rate = 0.5
 model_loaded = False
 
+reset_car()
+stop_all()
+
 # --------------- Set helper functions --------------
 
-def set_speed(gas):
-    global pwm
-    pwm.set_pwm(commands['gas'],0,int(gas * (commands['drive_max'] - commands['neutral']) + commands['neutral']))
-
-
-def set_direction(direction):
-    global pwm
-    pwm.set_pwm(commands['direction'], 0, int(direction * (commands['right'] - commands['left'])/2. + commands['straight']))
-
-def stop_car():
-    global pwm
-    pwm.set_pwm(commands['gas'],0,commands['neutral'])
-
-def brake_car():
-    global pwm
-    pwm.set_pwm(commands['gas'], 0, commands['stop'])
-
-def straight_dir():
-    global pwm
-    pwm.set_pwm(commands['direction'], 0, commands['straight'])
+# def set_speed(gas):
+#     global pwm
+#     pwm.set_pwm(commands['gas'],0,int(gas * (commands['drive_max'] - commands['neutral']) + commands['neutral']))
+#
+#
+# def set_direction(direction):
+#     global pwm
+#     pwm.set_pwm(commands['direction'], 0, int(direction * (commands['right'] - commands['left'])/2. + commands['straight']))
+#
+# def stop_car():
+#     global pwm
+#     pwm.set_pwm(commands['gas'],0,commands['neutral'])
+#
+# def brake_car():
+#     global pwm
+#     pwm.set_pwm(commands['gas'], 0, commands['stop'])
+#
+# def straight_dir():
+#     global pwm
+#     pwm.set_pwm(commands['direction'], 0, commands['straight'])
 
 # ---------------- Different modes functions ----------------
 
@@ -109,11 +114,11 @@ def autopilot(img):
     local_gas = get_gas_from_dir(curr_dir) * (max_speed_rate)
     #local_gas = 0.00002#print(local_gas)
 
-    set_direction(local_dir)
+    set_direction_angle(local_dir)
     if state == "started":
-        set_speed(local_gas)
+        set_speed_forward(local_gas)
     else:
-        stop_car()
+        stop_all()
 
 
 def dirauto(img):
@@ -128,7 +133,7 @@ def dirauto(img):
     index_class = prediction.index(max(prediction))
 
     local_dir = -1 + 2 * float(index_class) / float(len(prediction) - 1)
-    set_direction(local_dir)
+    set_direction_angle(local_dir)
 
 
 def training(img):
@@ -187,7 +192,7 @@ def on_switch_mode(data):
         state = "stopped"
         socketIO.emit('starter')
     # Stop the gas before switching mode
-    stop_car()
+    stop_all()
     mode = data
     if data == "dirauto":
         socketIO.off('dir')
@@ -216,7 +221,7 @@ def on_switch_mode(data):
         socketIO.emit('msg2user', ' Resting')
     print('switched to mode : ', data)
     # Make sure we stop even if the previous mode sent a last command before switching.
-    stop_car()
+    stop_all()
 
 
 def on_start(data):
@@ -227,13 +232,20 @@ def on_start(data):
 
 def on_dir(data):
     global curr_dir
-    curr_dir = float(data)
-    if curr_dir == 0:
+    direction = float(data)
+    curr_dir = curr_dir + 0.06 * direction
+    if curr_dir > 1 :
+        curr_dir = 1
+    elif curr_dir < -1 :
+        curr_dir = -1
+    print('THIS IS CURRENT DIR: {}'.format(curr_dir))
+    if direction == 0:
         #print(commands['straight'])
-        straight_dir()
+        set_direction_angle(0)
+        curr_dir = 0
     else:
         #print(int(curr_dir * (commands['right'] - commands['left'])/2. + commands['straight']))
-        set_direction(curr_dir)
+        set_direction_angle(curr_dir)
 
 
 def on_gas(data):
@@ -243,10 +255,10 @@ def on_gas(data):
     if curr_gas < 0:
         brake_car()
     elif curr_gas == 0:
-        stop_car()
+        stop_all()
     else:
     #    print(curr_gas * (commands['drive_max'] - commands['drive']) + commands['neutral'])
-        set_speed(curr_gas)
+        set_speed_forward(curr_gas)
     
 
 def on_max_speed_update(new_max_speed):

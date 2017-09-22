@@ -24,7 +24,7 @@ def convert_speed_to_pwm(speed):
     else :
         return int(speed * (commands['drive_max'] - commands['drive']) + commands['drive'])
 
-def set_direction(direction, pwm_object=pwm) :
+def set_direction_angle(direction, pwm_object=pwm) :
     pwm_object.set_pwm(commands['direction'], 0, convert_direction_to_pwm(direction))
     return
 

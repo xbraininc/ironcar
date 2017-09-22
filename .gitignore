@@ -1,0 +1,6 @@
+__pycache__*
+autopilots/*
+datasets/*
+images_log*
+predictions_log*
+node_modules*

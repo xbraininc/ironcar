@@ -50,42 +50,12 @@ if not os.path.exists(save_folder):
 with open(commands_json_file) as json_file:
     commands = json.load(json_file)
 
-# PWM setup
-# pwm = Adafruit_PCA9685.PCA9685()
-# pwm.set_pwm_freq(60)
-
 state, mode, running = "stop", "training",  True
 n_img = 0
 curr_dir, curr_gas = 0, 0
 current_model = None
 max_speed_rate = 0.5
 model_loaded = False
-
-reset_car()
-stop_all()
-
-# --------------- Set helper functions --------------
-
-# def set_speed(gas):
-#     global pwm
-#     pwm.set_pwm(commands['gas'],0,int(gas * (commands['drive_max'] - commands['neutral']) + commands['neutral']))
-#
-#
-# def set_direction(direction):
-#     global pwm
-#     pwm.set_pwm(commands['direction'], 0, int(direction * (commands['right'] - commands['left'])/2. + commands['straight']))
-#
-# def stop_car():
-#     global pwm
-#     pwm.set_pwm(commands['gas'],0,commands['neutral'])
-#
-# def brake_car():
-#     global pwm
-#     pwm.set_pwm(commands['gas'], 0, commands['stop'])
-#
-# def straight_dir():
-#     global pwm
-#     pwm.set_pwm(commands['direction'], 0, commands['straight'])
 
 # ---------------- Different modes functions ----------------
 
@@ -192,7 +162,7 @@ def on_switch_mode(data):
         state = "stopped"
         socketIO.emit('starter')
     # Stop the gas before switching mode
-    stop_all()
+    reset_car()
     mode = data
     if data == "dirauto":
         socketIO.off('dir')
@@ -240,11 +210,9 @@ def on_dir(data):
         curr_dir = -1
     print('THIS IS CURRENT DIR: {}'.format(curr_dir))
     if direction == 0:
-        #print(commands['straight'])
         set_direction_angle(0)
         curr_dir = 0
     else:
-        #print(int(curr_dir * (commands['right'] - commands['left'])/2. + commands['straight']))
         set_direction_angle(curr_dir)
 
 
@@ -257,7 +225,6 @@ def on_gas(data):
     elif curr_gas == 0:
         stop_all()
     else:
-    #    print(curr_gas * (commands['drive_max'] - commands['drive']) + commands['neutral'])
         set_speed_forward(curr_gas)
     
 

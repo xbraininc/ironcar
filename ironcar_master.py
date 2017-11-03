@@ -80,7 +80,6 @@ def autopilot(img):
         np.save('predictions_log/prediction{}'.format(file_count),pred)
         file_count += 1
         prediction = list(pred[0])
-        print("pred:", prediction)
     if len(prediction) > 1:
         index_class = prediction.index(max(prediction))
         local_dir = -1 + 2 * float(index_class)/float(len(prediction)-1)
@@ -95,6 +94,7 @@ def autopilot(img):
         set_speed_forward(local_gas)
     else:
         stop_all()
+        set_direction_angle(local_dir)
 
 
 def dirauto(img):

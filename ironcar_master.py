@@ -72,18 +72,22 @@ def autopilot(img):
     global model, graph, state, max_speed_rate, file_count
 
     img = np.array([img[80:, :, :]])
+    img = img.astype('float32') / 255
     with graph.as_default():
         pred = model.predict(img)
-        print('pred : ', pred)
         np.save('predictions_log/prediction{}'.format(file_count),pred)
         file_count += 1
         prediction = list(pred[0])
-    index_class = prediction.index(max(prediction))
-
-    local_dir = -1 + 2 * float(index_class)/float(len(prediction)-1)
-    local_gas = get_gas_from_dir(curr_dir) * (max_speed_rate)
+        print("pred:", prediction)
+    if len(prediction) > 1:
+        index_class = prediction.index(max(prediction))
+        local_dir = -1 + 2 * float(index_class)/float(len(prediction)-1)
+        local_gas = get_gas_from_dir(curr_dir) * (max_speed_rate)
+    else :
+        local_dir = prediction[0]
+        local_gas = get_gas_from_dir(curr_dir) * (max_speed_rate)
     #local_gas = 0.00002#print(local_gas)
-
+    print("Gas: {} Direction: {}".format(local_gas,local_dir))
     set_direction_angle(local_dir)
     if state == "started":
         set_speed_forward(local_gas)

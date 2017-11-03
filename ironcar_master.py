@@ -23,6 +23,8 @@ models_path = './autopilots/'
 
 fps = 60
 
+real_fps = 0
+
 cam_resolution = (250, 150)
 
 commands_json_file = "commands.json"
@@ -124,23 +126,32 @@ def training(img):
 # This function is launched on a separate thread that is supposed to run permanently
 # to get camera pics
 def camera_loop():
-    global state, mode_function, running, file_count
+    global state, mode_function, running, file_count, real_fps
 
     cam = picamera.PiCamera(framerate=fps)
     cam.resolution = cam_resolution
     cam_output = picamera.array.PiRGBArray(cam, size=cam_resolution)
     stream = cam.capture_continuous(cam_output, format="rgb", use_video_port=True)
-    
+    start = time.time()
     for f in stream:
         img_arr = f.array
-        np.save('images_log/img{}'.format(file_count),img_arr)
+        # np.save('images_log/img{}'.format(file_count),img_arr)
         if not running:
             break
         mode_function(img_arr)
+        start = compute_fps(start, time.time())
 
         cam_output.truncate(0)
 
-
+def compute_fps(start, end):
+    global real_fps
+    if end - start >= 1 :
+        socketIO.emit('fps', real_fps)
+        real_fps = 0
+        return time.time()
+    else :
+        real_fps = real_fps + 1
+        return start
 # ------------------ SocketIO callbacks-----------------------
 # This will try to load a model when receiving a callback from the node server
 def on_model_selected(model_name):
@@ -236,6 +247,10 @@ def on_max_speed_update(new_max_speed):
     global max_speed_rate
     max_speed_rate = new_max_speed
 
+def on_error():
+    stop_all()
+    return
+
 # --------------- Starting server and threads ----------------
 mode_function = default_call
 socketIO = SocketIO('http://localhost', port=8000, wait_for_connection=False)
@@ -249,6 +264,7 @@ socketIO.on('starterUpdate', on_start)
 socketIO.on('maxSpeedUpdate', on_max_speed_update)
 socketIO.on('gas', on_gas)
 socketIO.on('dir', on_dir)
+socketIO.on('noconnection', on_error)
 
 try:
     socketIO.wait()

@@ -130,6 +130,10 @@ socket.on("model_update", function (modelSelected) {
     mySelect.selectedIndex = modelIndex;
 });
 
+socket.on('fps', function (fps) {
+    document.getElementById("fps").innerHTML = fps;
+})
+
 // -------- USER INFO -----------
 
 // Message to the user

@@ -248,7 +248,10 @@ def on_max_speed_update(new_max_speed):
     max_speed_rate = new_max_speed
 
 def on_error():
+    global mode_function
+    print("stopping everything")
     stop_all()
+    mode_function = default_call
     return
 
 # --------------- Starting server and threads ----------------

@@ -101,7 +101,8 @@ io.on('connection', function(client){
 
     client.on('disconnect', function(){
         var address = client.handshake.address; 
-   	console.log( address + ' disconnected');
+   	    console.log( address + ' disconnected');
+   	    io.emit('noconnection')
     });
 
     // Messages to send to the user

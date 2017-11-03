@@ -16,10 +16,10 @@ def convert_direction_to_pwm(direction):
     return int((commands['right'] - commands['left']) * direction / 2 + commands['straight'])
 
 def convert_speed_to_pwm(speed):
-    if not 0 <= speed <= 1 :
+    if not 0 < speed <= 1 :
         print('Not a valid speed')
         return 0
-    if speed == 0 :
+    elif speed == 0 :
         return 300
     else :
         return int(speed * (commands['drive_max'] - commands['drive']) + commands['drive'])
@@ -33,7 +33,8 @@ def stop_all(pwm_object=pwm):
     return
 
 def set_speed_forward(gas, pwm_object=pwm):
-    pwm_object.set_pwm(commands['gas'],0,convert_speed_to_pwm(gas))
+    speed_pwm = convert_speed_to_pwm(gas)
+    pwm_object.set_pwm(commands['gas'],0,speed_pwm)
     return
 
 def set_speed_backward(gas, pwm_object=pwm):

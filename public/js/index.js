@@ -68,6 +68,12 @@ socket.on('mode_update', function (newMode) {
 // -------- STARTER -----------
 
 function starter() {
+    var startButton = document.getElementById('starter')
+    if (startButton.innerHTML === 'Start') {
+        startButton.className = "btn btn-warning btn-lg btn-block startButton"
+    } else {
+        startButton.className = "btn btn-primary btn-lg btn-block startButton"
+    }
     socket.emit('starter');
 }
 

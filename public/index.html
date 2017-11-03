@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body id="kinput">
-<div class="mx-auto card" style="width:40vw;margin-top: 20px">
+<div class="mx-auto card">
     <div class="card-body">
         <span class="fps">FPS: <span id="fps">0</span></span>
         <h1 class="text-center">IronCar</h1>
@@ -23,10 +23,10 @@
             <select name="autopilot_models" id="model_select" onchange="model_selected(this);">
             </select>
         </form>
-        <button id="starter" onclick="starter()">Start</button>
         <p id="maxSpeed">Max speed limit: 50%</p>
         <input type="range" id="maxSpeedSlider" oninput="maxSpeedUdate()">
     </div>
+    <button class="btn btn-primary btn-lg btn-block startButton" id="starter" onclick="starter()">Start</button>
 </div>
 <script src="/socket.io/socket.io.js"></script>
 <script src="js/index.js"></script>

@@ -22,7 +22,7 @@ def convert_speed_to_pwm(speed):
     elif speed == 0 :
         return 300
     else :
-        return int(speed * (commands['drive_max'] - commands['drive']) + commands['drive'])
+        return int(speed * (commands['drive_max'] - commands['neutral']) + commands['neutral'])
 
 def set_direction_angle(direction, pwm_object=pwm) :
     pwm_object.set_pwm(commands['direction'], 0, convert_direction_to_pwm(direction))

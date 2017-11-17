@@ -114,6 +114,10 @@ io.on('connection', function(client){
     client.on('fps', function(fps) {
         io.emit('fps', fps)
     })
+
+    client.on("angle", function(direction) {
+        io.emit('direction', direction)
+    })
     
 
 });

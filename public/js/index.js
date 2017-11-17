@@ -140,6 +140,10 @@ socket.on('fps', function (fps) {
     document.getElementById("fps").innerHTML = fps;
 })
 
+socket.on('direction', function(direction) {
+    document.getElementById("angle").innerHTML = direction;
+})
+
 // -------- USER INFO -----------
 
 // Message to the user

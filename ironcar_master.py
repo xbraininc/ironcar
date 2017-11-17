@@ -89,6 +89,7 @@ def autopilot(img):
         local_gas = get_gas_from_dir(curr_dir) * (max_speed_rate)
     #local_gas = 0.00002#print(local_gas)
     print("Gas: {} Direction: {}".format(local_gas,local_dir))
+    socketIO.emit("angle",float(local_dir))
     set_direction_angle(local_dir)
     if state == "started":
         set_speed_forward(local_gas)

@@ -140,8 +140,40 @@ socket.on('fps', function (fps) {
     document.getElementById("fps").innerHTML = fps;
 })
 
+function draw_arrow(context, startX, startY, size, direction)
+            {
+                var rad = Math.PI/2*direction - Math.PI/2;
+                var endX = startX+size*Math.cos(rad);
+                var endY = startY+size*Math.sin(rad);
+                var alpha = 45*Math.PI/180
+                context.moveTo(startX, startY);
+                context.lineTo(endX, endY) ;
+                x = - Math.cos(alpha) * 0.25 * size;
+                y = Math.sin(alpha) * 0.25 * size;
+                x_proj = x * Math.cos(rad) - y * Math.sin(rad) + endX;
+                y_proj = x * Math.sin(rad) + y * Math.cos(rad) + endY;
+                context.lineTo(x_proj, y_proj);
+		x = - Math.cos(-alpha) * 0.25 * size;
+                y = Math.sin(-alpha) * 0.25 * size;
+                x_proj = x * Math.cos(rad) - y * Math.sin(rad) + endX;
+                y_proj = x * Math.sin(rad) + y * Math.cos(rad) + endY;
+                context.moveTo(endX,endY)
+                context.lineTo(x_proj, y_proj);
+                context.stroke();
+                //context.rotate(-90*direction + 90)
+            }
+
 socket.on('direction', function(direction) {
     document.getElementById("angle").innerHTML = direction;
+    var canvas = document.getElementById("direction");
+    var context = canvas.getContext("2d")
+    var startX = 100;
+    var startY = 180;
+    var size = 100;
+    context.lineWidth = 3;
+    context.beginPath()
+    context.clearRect(0,0,canvas.width, canvas.height)
+    draw_arrow(context, startX, startY, size, direction)
 })
 
 // -------- USER INFO -----------

@@ -24,6 +24,8 @@
             </select>
         </form>
         <p id="maxSpeed">Max speed limit: 50%</p>
+        <button class="btn btn-secondary btn-lg speedButton" onclick="changeSpeed(-1)">-</button>
+        <button class="btn btn-secondary btn-lg speedButton" style="float:right" onclick="changeSpeed(1)">+</button>
         <input type="range" id="maxSpeedSlider" oninput="maxSpeedUdate()">
     </div>
     <button class="btn btn-primary btn-lg btn-block startButton" id="starter" onclick="starter()">Start</button>

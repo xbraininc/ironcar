@@ -62,6 +62,12 @@
     position: absolute;
 }
 
+.speedButton {
+    width: 40px;
+    heigh: 20px;
+    text-align: center;
+}
+
 input[type=range] {
   -webkit-appearance: none;
   margin: 18px 0;

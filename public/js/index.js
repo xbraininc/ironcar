@@ -48,6 +48,12 @@ socket.on('maxSpeedUpdate', function (maxSpeed) {
     document.getElementById("maxSpeedSlider").value = maxSpeed * 100;
 });
 
+function changeSpeed(i) {
+    var newMaxSpeed = parseInt(document.getElementById("maxSpeedSlider").value) + i;
+    document.getElementById("maxSpeedSlider").value = newMaxSpeed
+    document.getElementById("maxSpeed").innerHTML = "Max speed limit: " + newMaxSpeed + "%";
+    socket.emit("maxSpeed", newMaxSpeed/100.)
+}
 
 // -------- MODE -----------
 
@@ -139,6 +145,7 @@ socket.on("model_update", function (modelSelected) {
 socket.on('fps', function (fps) {
     document.getElementById("fps").innerHTML = fps;
 })
+
 
 function draw_arrow(context, startX, startY, size, direction)
             {

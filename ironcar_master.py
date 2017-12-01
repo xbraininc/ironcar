@@ -17,6 +17,7 @@ from keras.models import load_model
 import tensorflow as tf
 import numpy as np
 import json
+import imageio
 
 # *********************************** Parameters ************************************
 models_path = './autopilots/'
@@ -29,22 +30,12 @@ cam_resolution = (250, 150)
 
 commands_json_file = "commands.json"
 
-file_count = 0
-
 # ***********************************************************************************
 
 # --------------------------- SETUP ------------------------
 
 ct = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
 save_folder = os.path.join('datasets/', str(ct))
-image_logs = 'images_logs'
-predictions_logs = 'predictions_logs'
-
-if not os.path.exists(image_logs):
-    os.makedirs(image_logs)
-
-if not os.path.exists(predictions_logs):
-    os.makedirs(predictions_logs)
 
 if not os.path.exists(save_folder):
     os.makedirs(save_folder)
@@ -58,6 +49,7 @@ curr_dir, curr_gas = 0, 0
 current_model = None
 max_speed_rate = 0.5
 model_loaded = False
+save = False
 
 # ---------------- Different modes functions ----------------
 
@@ -71,14 +63,12 @@ def default_call(img):
 
 
 def autopilot(img):
-    global model, graph, state, max_speed_rate, file_count
+    global model, graph, state, max_speed_rate, save, n_img
 
-    img = np.array([img[80:, :, :]])
-    img = img.astype('float32') / 255
+    cropped_img = np.array([img[80:, :, :]])
+    cropped_img = cropped_img.astype('float32') / 255
     with graph.as_default():
-        pred = model.predict(img)
-        np.save('predictions_log/prediction{}'.format(file_count),pred)
-        file_count += 1
+        pred = model.predict(cropped_img)
         prediction = list(pred[0])
     if len(prediction) > 1:
         index_class = prediction.index(max(prediction))
@@ -87,10 +77,15 @@ def autopilot(img):
     else :
         local_dir = prediction[0]
         local_gas = get_gas_from_dir(curr_dir) * (max_speed_rate)
-    #local_gas = 0.00002#print(local_gas)
     print("Gas: {} Direction: {}".format(local_gas,local_dir))
     socketIO.emit("angle",float(local_dir))
     set_direction_angle(local_dir)
+    if save:
+        image_name = os.path.join(save_folder, 'frame_' + str(n_img) + '_gas_' +
+                                  str(curr_gas) + '_dir_' + str(curr_dir) +
+                                  '_' + '.jpg')
+        imageio.imwrite(image_name, img)
+        n_img += 1
     if state == "started":
         set_speed_forward(local_gas)
     else:
@@ -99,7 +94,7 @@ def autopilot(img):
 
 
 def dirauto(img):
-    global model, graph, file_count
+    global model, graph
 
     img = np.array([img[80:, :, :]])
     with graph.as_default():
@@ -127,7 +122,7 @@ def training(img):
 # This function is launched on a separate thread that is supposed to run permanently
 # to get camera pics
 def camera_loop():
-    global state, mode_function, running, file_count, real_fps
+    global state, mode_function, running, real_fps, n_img, curr_dir, curr_gas
 
     cam = picamera.PiCamera(framerate=fps)
     cam.resolution = cam_resolution
@@ -136,7 +131,6 @@ def camera_loop():
     start = time.time()
     for f in stream:
         img_arr = f.array
-        # np.save('images_log/img{}'.format(file_count),img_arr)
         if not running:
             break
         mode_function(img_arr)
@@ -255,6 +249,12 @@ def on_error():
     mode_function = default_call
     return
 
+def on_save_request():
+    global save
+    save = not save
+    print("Save images {}".format(save))
+    return
+
 # --------------- Starting server and threads ----------------
 mode_function = default_call
 socketIO = SocketIO('http://localhost', port=8000, wait_for_connection=False)
@@ -269,6 +269,7 @@ socketIO.on('maxSpeedUpdate', on_max_speed_update)
 socketIO.on('gas', on_gas)
 socketIO.on('dir', on_dir)
 socketIO.on('noconnection', on_error)
+socketIO.on('saveImages', on_save_request)
 
 try:
     socketIO.wait()

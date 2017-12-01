@@ -118,14 +118,17 @@ io.on('connection', function(client){
     client.on("angle", function(direction) {
         io.emit('direction', direction)
     })
-    
+
+    client.on("save", function() {
+        io.emit("saveImages")
+    })
+
 
 });
 
 io.on('error', function(data){
     console.log(data);
 });
-
 
 
 Object.keys(ifaces).forEach(function (ifname) {

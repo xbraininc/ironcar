@@ -183,6 +183,11 @@ socket.on('direction', function(direction) {
     draw_arrow(context, startX, startY, size, direction)
 })
 
+function saveImages() {
+    console.log("Start saving images")
+    socket.emit("save")
+}
+
 // -------- USER INFO -----------
 
 // Message to the user

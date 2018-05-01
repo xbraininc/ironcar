@@ -1,3 +1,7 @@
+# ARCHIVED
+
+The latest version of Ironcar project can be found at : https://github.com/vinzeebreak/ironcar . 
+
 # IRONCAR
 
 ## Hardware setup
